@@ -30,6 +30,7 @@ header{grid-area:h;background:var(--g);color:#fff;display:flex;align-items:cente
 #brand{font-weight:800;font-size:calc(var(--fs)*1.2);margin-right:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #off{background:var(--a);color:#3a2800;border-radius:99px;padding:2px 10px;font-size:.8em;font-weight:700}
 #inst{background:#fff;color:var(--c);border-radius:99px;padding:6px 12px;font-weight:700;font-size:.87em}
+#gox{background:rgba(255,255,255,.2);color:#fff;border-radius:99px;padding:6px 12px;font-weight:700;font-size:.87em;text-decoration:none;white-space:nowrap}#gox:focus-visible{outline:2px solid #fff;outline-offset:2px}
 nav{grid-area:n;background:var(--w);display:flex;flex-direction:column;gap:6px;padding:10px 8px;border-right:1px solid var(--ln)}
 .tab{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.8em;font-weight:600;padding:10px 2px;border-radius:14px;color:var(--mu)}.tab b{font-size:1.45em;transition:transform .25s}.tab.on{background:var(--g);color:#fff;box-shadow:var(--sh)}.tab.on b{transform:scale(1.15)}
 main{grid-area:m;min-height:0;position:relative}.v{display:none;height:100%;overflow:auto;padding:16px;overscroll-behavior:contain}.v.on{display:block}
@@ -82,7 +83,7 @@ body.co #bd{display:block;position:fixed;inset:0;background:rgba(8,12,24,.4);z-i
 </style>
 </head>
 <body>
-<header><span class="logo">📋</span><span id="brand">Tên cửa hàng</span><span id="off" hidden>Offline</span><button id="inst" hidden>⤓ Cài app</button></header>
+<header><span class="logo">📋</span><span id="brand">Tên cửa hàng</span><a id="gox" href="https://congcubanhang.vercel.app/">🧾 Bán hàng</a><span id="off" hidden>Offline</span><button id="inst" hidden>⤓ Cài app</button></header>
 <nav><button class="tab on" data-v="order"><b>🛒</b>Đặt hàng</button><button class="tab" data-v="prod"><b>📦</b>Hàng hoá</button><button class="tab" data-v="rep"><b>📊</b>Đơn đặt</button><button class="tab" data-v="set"><b>⚙️</b>Cài đặt</button></nav>
 <main>
 <section class="v on" id="v-order">
