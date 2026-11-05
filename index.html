@@ -282,7 +282,7 @@ function rSet(){const fld=f=>`<label>${f[1]}${f[5]?' <b class="req">*</b>':''}<i
  $('#x2').onclick=()=>dl('hang-hoa-dat-hang.csv',csv([PH,...S.products.map(p=>[p.g,p.n,p.u,p.qc||'',p.p||'',p.f?'x':''])]),'text/csv');
  $('#x3').onclick=()=>dl('don-dat.csv',csv([['Số phiếu','Ngày','Gửi đến','Tên hàng','Đơn vị','SL','Giá nhập','Thành tiền','Trạng thái'],...S.orders.flatMap(o=>o.items.map(i=>[o.no,dk(o.ts),o.to||'',i.n,i.u,i.q,i.p||'',i.p>0?Math.round(i.q*i.p):'',STT[o.st]]))]),'text/csv');
  $('#x4').onclick=()=>dl('mau-hang-hoa-dat-hang.csv',csv([PH]),'text/csv');
- $('#wipe').onclick=()=>{if(confirm('Xoá TOÀN BỘ dữ liệu trên máy này? Hãy sao lưu trước.')&&confirm('Chắc chắn xoá?')){S=DEF();cart={};AD={};TO='';NT='';pc();save();applyCfg();go('set')}}}
+ $('#wipe').onclick=()=>{if(confirm('Xoá TOÀN BỘ dữ liệu trên máy này? Hãy sao lưu trước.')&&confirm('Chắc chắn xoá?')){S=DEF();S.mig=2;cart={};AD={};TO='';NT='';pc();save();applyCfg();go('set')}}}
 /* ---- nhập / xuất ---- */
 const PH=['Nhóm','Tên sản phẩm','Đơn vị','Quy cách','Giá nhập','Yêu thích (x = có)'];
 function dl(name,txt,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([type==='text/csv'?'\uFEFF'+txt:txt],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
@@ -314,7 +314,7 @@ function impJSON(t){let d;try{d=JSON.parse(t)}catch(e){toast('File JSON không �
  if(!d||d.app!=='dat-hang-local'||!d.S||!Array.isArray(d.S.products)||!Array.isArray(d.S.orders)){toast('Không phải file sao lưu của Công cụ đặt hàng');return}
  const X=cleanX(d.S);choose(`File có ${X.products.length} hàng hoá, ${X.orders.length} đơn.`,
   ()=>{X.products.forEach(o=>{const e=S.products.find(p=>key(p)===key(o));if(e)Object.assign(e,o,{id:e.id});else S.products.push(o)});const ids=new Set(S.orders.map(o=>o.id));X.orders.forEach(o=>{if(!ids.has(o.id))S.orders.push(o)});S.counter=Math.max(S.counter,X.counter||0);if(!S.cfg.name)S.cfg=Object.assign(DEF().cfg,X.cfg);applyCfg()},
-  ()=>{S=Object.assign(DEF(),X,{cfg:Object.assign(DEF().cfg,X.cfg)});cart={};AD={};pc();applyCfg()})}
+  ()=>{S=Object.assign(DEF(),X,{mig:2,cfg:Object.assign(DEF().cfg,X.cfg)});cart={};AD={};pc();applyCfg()})}
 let IP=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();IP=e;$('#inst').hidden=false});
 $('#inst').onclick=async()=>{if(!IP)return;IP.prompt();await IP.userChoice;IP=null;$('#inst').hidden=true};
 const net=()=>$('#off').hidden=navigator.onLine;addEventListener('online',net);addEventListener('offline',net);net();
