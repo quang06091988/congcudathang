@@ -207,7 +207,7 @@ function editP(id,g0){const p=S.products.find(x=>x.id===id)||{n:'',g:g0!==undefi
  <label class="ck"><input type="checkbox" id="e_f" ${p.f?'checked':''}> Yêu thích (hiện lên đầu)</label><p class="er" id="e_er"></p>
  <div class="row">${id?'<button class="dng" id="e_del">Xoá</button>':''}<button class="ghost" onclick="closeM()">Hủy</button>${id?'':'<button class="ghost" id="e_ok2">Lưu &amp; thêm</button>'}<button class="pri" id="e_ok">Lưu</button></div>`,1);
  const sv=again=>{const n=$('#e_n').value.trim(),pr=num($('#e_p').value);if(!n){bad('e_n','e_er','Cần nhập tên hàng');return}
-  const o=id?p:{id:uid()};Object.assign(o,{n:n.slice(0,120),g:$('#e_g').value.trim().slice(0,60),u:$('#e_u').value.trim().slice(0,20),qc:$('#e_qc').value.trim().slice(0,60),p:pr>0?pr:0,f:$('#e_f').checked?1:0});if(!id)S.products.push(o);save();rProd();toast('Đã lưu');if(again)editP(undefined,o.g);else closeM()};
+  const o=id?p:{id:uid()};Object.assign(o,{n:n.slice(0,120),g:$('#e_g').value.trim().slice(0,60),u:$('#e_u').value.trim().slice(0,20),qc:$('#e_qc').value.trim().slice(0,60),p:pr>0?pr:0,f:$('#e_f').checked?1:0,upd:Date.now()});if(!id)S.products.push(o);save();rProd();toast('Đã lưu');if(again)editP(undefined,o.g);else closeM()};
  $('#e_ok').onclick=()=>sv(false);if($('#e_ok2'))$('#e_ok2').onclick=()=>sv(true);
  if(id)$('#e_del').onclick=()=>{if(confirm('Xoá "'+p.n+'"? Đơn cũ vẫn giữ nguyên.')){S.products=S.products.filter(x=>x.id!==id);delete cart[id];save();closeM();rProd()}}}
 /* ---- đơn đặt & báo cáo ---- */
@@ -296,7 +296,7 @@ function rSet(){const fld=f=>`<label>${f[1]}${f[5]?' <b class="req">*</b>':''}<i
  $('#cfgc').onclick=e=>{const b=e.target.closest('.sw');if(b){$('#s_color').value=b.dataset.c;hap('tap')}};$('#s_ok').onclick=()=>{const v={};FA.forEach(f=>{v[f[0]]=$('#s_'+f[0]).value.trim()});v.price=$('#s_price').checked?1:0;if(!v.name){bad('s_name','s_er','Cần nhập tên cửa hàng để bắt đầu');return}const first=!S.cfg.name;Object.assign(S.cfg,v);save();applyCfg();toast('Đã lưu cài đặt');if(first)go('order')};
  rUi();const lb=S.lastBackup?new Date(S.lastBackup).toLocaleString('vi-VN'):'chưa từng',od=S.orders.length&&Date.now()-(S.lastBackup||0)>7*864e5;
  if(SO.dt===undefined)SO.dt=od?1:0;
- $('#datac').innerHTML=`<details class="sec" data-s="dt"${SO.dt?' open':''}><summary><span>Dữ liệu (${S.products.length} hàng · ${S.orders.length} đơn)${od?' <span style="color:var(--rd)">· cần sao lưu</span>':''}</span></summary><p class="mu" style="margin-bottom:8px${od?';color:var(--rd);font-weight:700':''}">Dữ liệu nằm trong trình duyệt của máy này. Sao lưu gần nhất: ${lb}.${od?' Nên sao lưu ngay để tránh mất dữ liệu.':''}</p><p class="hint" style="margin:-4px 0 8px">Trên điện thoại, nút Sao lưu cho bạn chọn nơi gửi file (Zalo, Drive, Email…).</p><div class="g2"><button class="pri" id="x1">⬇ Sao lưu đầy đủ (JSON)</button><button class="ghost" id="i1">⬆ Khôi phục từ JSON</button><button class="ghost" id="x2">⬇ Xuất hàng hoá (CSV)</button><button class="ghost" id="i2">⬆ Nhập hàng hoá (CSV)</button><button class="ghost" id="x3">⬇ Xuất đơn đặt (CSV)</button><button class="ghost" id="x4">⬇ Tải file CSV mẫu</button></div><div class="row"><button class="dng" id="wipe">Xoá toàn bộ dữ liệu</button></div></details>`;
+ $('#datac').innerHTML=`<details class="sec" data-s="dt"${SO.dt?' open':''}><summary><span>Dữ liệu (${S.products.length} hàng · ${S.orders.length} đơn)${od?' <span style="color:var(--rd)">· cần sao lưu</span>':''}</span></summary><p class="mu" style="margin-bottom:8px${od?';color:var(--rd);font-weight:700':''}">Dữ liệu nằm trong trình duyệt của máy này. Sao lưu gần nhất: ${lb}.${od?' Nên sao lưu ngay để tránh mất dữ liệu.':''}</p><p class="hint" style="margin:-4px 0 8px">Trên điện thoại, nút Sao lưu cho bạn chọn nơi gửi file (Zalo, Drive, Email…).</p><div class="g2"><button class="pri" id="x1">⬇ Sao lưu đầy đủ (JSON)</button><button class="ghost" id="i1">⬆ Khôi phục từ JSON</button><button class="ghost" id="x2">⬇ Xuất hàng hoá (CSV)</button><button class="ghost" id="i2">⬆ Nhập hàng hoá (CSV)</button><button class="ghost" id="x3">⬇ Xuất đơn đặt (CSV)</button><button class="ghost" id="x4">⬇ Tải file CSV mẫu</button></div><p style="margin:14px 0 6px"><b>Trao đổi với app khác</b></p>${xBtns()}<div class="row"><button class="dng" id="wipe">Xoá toàn bộ dữ liệu</button></div></details>`;
  $('#x1').onclick=async()=>{const name='sao-luu-dat-hang-'+dk(Date.now())+'.json',prev=S.lastBackup;S.lastBackup=Date.now();const ok=await backupFile(name,JSON.stringify({app:'dat-hang-local',v:1,S},null,1));if(ok)save();else S.lastBackup=prev;rSet()};
  $('#i1').onclick=()=>pick('.json,.txt,text/plain,application/json',impJSON);$('#i2').onclick=()=>pick('.csv,.tsv,.txt',impCSV);
  $('#x2').onclick=()=>dl('hang-hoa-dat-hang.csv',csv([PH,...S.products.map(p=>[p.g,p.n,p.u,p.qc||'',p.p||'',p.f?'x':''])]),'text/csv');
@@ -329,7 +329,7 @@ function impCSV(t){const rows=parseCSV(t);if(rows.length<2){toast('File không c
   ()=>{S.products=ok.map(o=>Object.assign({id:uid()},o));cart={};AD={};pc()})}
 const sid=v=>String(v??'').replace(/[^\w-]/g,'').slice(0,64)||uid(),n0=v=>{v=+v;return isFinite(v)?v:0},st=(v,l)=>String(v??'').slice(0,l);
 function cleanX(X){const cfg=Object.assign(DEF().cfg,X.cfg&&typeof X.cfg==='object'?X.cfg:{});if(!/^#[0-9a-f]{6}$/i.test(cfg.color))cfg.color='#2563eb';
- return{products:X.products.map(p=>({id:sid(p.id),n:st(p.n,120),g:st(p.g,60),u:st(p.u,20),qc:st(p.qc,60),p:n0(p.p),f:p.f?1:0})),
+ return{products:X.products.map(p=>({id:sid(p.id),n:st(p.n,120),g:st(p.g,60),u:st(p.u,20),qc:st(p.qc,60),p:n0(p.p),f:p.f?1:0,...(p.gid?{gid:sid(p.gid)}:{}),...(Array.isArray(p.ga)?{ga:p.ga.slice(0,10).map(sid)}:{}),...(p.upd?{upd:n0(p.upd)}:{})})),
   orders:X.orders.map(o=>({id:sid(o.id),no:st(o.no,40),ts:n0(o.ts),to:st(o.to,80),note:st(o.note,300),st:['o','r','v'].includes(o.st)?o.st:'o',rcv:n0(o.rcv),items:(Array.isArray(o.items)?o.items:[]).map(i=>({i:sid(i.i),n:st(i.n,120),u:st(i.u,20),qc:st(i.qc,60),q:n0(i.q),p:n0(i.p),x:i.x?1:0}))})),
   counter:n0(X.counter),lastBackup:n0(X.lastBackup),cfg}}
 function impJSON(t){let d;try{d=JSON.parse(t)}catch(e){toast('File JSON không đọc được');return}
@@ -341,6 +341,65 @@ let IP=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();IP=e;$
 $('#inst').onclick=async()=>{if(!IP)return;IP.prompt();await IP.userChoice;IP=null;$('#inst').hidden=true};
 const net=()=>$('#off').hidden=navigator.onLine;addEventListener('online',net);addEventListener('offline',net);net();
 if('serviceWorker'in navigator){const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had)toast('Đã có bản mới — đóng và mở lại app để dùng')});addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
+/* ---- Đặt hàng: phần riêng của gói trao đổi (chủ: giá nhập, quy cách, đơn đặt) ---- */
+const XME='dat';
+const XG={to:[['gia','Gửi cho Tính giá (giá nhập, quy cách)']],
+ hint:'Gửi giá nhập và quy cách cho Tính giá (sau khi nhận hàng). Nhập gói do Tính giá xuất để thêm hàng mới vào danh sách đặt.',
+ out(){return{items:S.products.map(p=>({gid:ensureGid(p),name:p.n,group:p.g||'',fav:p.f?1:0,upd:p.upd||0,buy:{lu:p.u||'',qc:p.qc||'',cost:p.p||0}}))}},
+ plan(P){if(P.from!=='gia')return{lines:[],warn:['Đặt hàng chỉ nhận gói từ Tính giá (danh mục hàng mua).'],n:0,apply(){return''}};
+  const ops=[];let nw=0,nf=0,nr=0,nl=0;
+  P.items.forEach(i=>{if(!i.buy)return;const e=xFind(S.products,i);
+   if(!e){nw++;ops.push(()=>S.products.push({id:uid(),gid:i.gid,n:i.name,g:i.group,u:i.buy.lu,qc:i.buy.qc,p:i.buy.cost,f:i.fav,upd:i.upd}));return}
+   const fill=(!e.u&&i.buy.lu)||(!e.qc&&i.buy.qc)||(!(e.p>0)&&i.buy.cost>0),rn=i.upd>(e.upd||0)&&(e.n!==i.name||e.g!==i.group);
+   if(fill)nf++;if(rn)nr++;if(!hasGid(e,i.gid))nl++;
+   ops.push(()=>{xAdopt(e,i);if(!e.u&&i.buy.lu)e.u=i.buy.lu;if(!e.qc&&i.buy.qc)e.qc=i.buy.qc;if(!(e.p>0)&&i.buy.cost>0)e.p=i.buy.cost;xShared(e,i)})});
+  const L=[];if(nw)L.push(`<b>${nw}</b> hàng mới`);if(nf)L.push(`<b>${nf}</b> hàng được điền thêm đơn vị/quy cách/giá nhập còn trống`);if(nr)L.push(`<b>${nr}</b> hàng đổi tên/nhóm`);if(nl)L.push(`<b>${nl}</b> hàng được liên kết với Tính giá (khớp theo tên)`);
+  return{lines:L,warn:[],n:nw+nf+nr+nl,apply(){ops.forEach(f=>f());return`${nw} hàng mới, ${nf} hàng được điền thêm.`}}},
+ refresh(){go(document.body.dataset.t||'order')}};
+
+/* ===== GÓI TRAO ĐỔI giữa Bán hàng, Đặt hàng, Tính giá =====
+   Khối này giống hệt ở cả ba công cụ. Phần riêng từng app là XME và XG ngay phía trên.
+   Quy tắc: mỗi trường có một chủ. Gói chỉ ghi đè trường mà bên gửi làm chủ; tên, nhóm theo bản sửa mới hơn (upd); Yêu thích giữ riêng từng app;
+   trường còn lại chỉ điền vào chỗ trống. Hàng khớp theo mã chung (gid); lần đầu mới khớp theo nhóm + tên rồi gán mã. */
+const XN={ban:'Bán hàng',dat:'Đặt hàng',gia:'Tính giá'};
+function xn(v){v=+v;return isFinite(v)&&v>0?Math.round(v*100)/100:0}
+function xc(s,n){return String(s??'').slice(0,n)}
+function xd(t){const d=new Date(t),p=n=>String(n).padStart(2,'0');return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()}
+function gsid(v){return String(v??'').replace(/[^\w-]/g,'').slice(0,64)}
+function hasGid(o,g){return o.gid===g||(Array.isArray(o.ga)&&o.ga.includes(g))}
+function ensureGid(o){if(!o.gid)o.gid=uid();return o.gid}
+function xk(g,n){g=norm(g);return(g==='khac'?'':g)+'|'+norm(n)}
+function xFind(list,i){let e=list.find(x=>hasGid(x,i.gid));if(e)return e;e=list.find(x=>xk(x.g,x.n)===xk(i.group,i.name));if(e)return e;
+ const m=list.filter(x=>norm(x.n)===norm(i.name));return m.length===1&&(!norm(i.group)||!norm(m[0].g))?m[0]:null}
+function xAdopt(e,i){if(!e.gid)e.gid=i.gid;else if(!hasGid(e,i.gid)){(e.ga=e.ga||[]).push(i.gid);if(e.ga.length>10)e.ga.shift()}}
+function xShared(e,i){if(i.upd>(e.upd||0)){e.n=i.name;e.g=i.group;if(i.unit&&XME!=='dat')e.u=i.unit;e.upd=i.upd}}
+function xClean(i){if(!i||typeof i!=='object')return null;const g=gsid(i.gid),n=xc(i.name,120).trim();if(!g||!n)return null;const b=i.buy&&typeof i.buy==='object'?i.buy:null;
+ return{gid:g,name:n,group:xc(i.group,60),unit:xc(i.unit,20),fav:i.fav?1:0,so:i.so?1:0,upd:xn(i.upd),price:xn(i.price),sp:xn(i.sp),uc:xn(i.uc),buy:b?{lu:xc(b.lu,20),qc:xc(b.qc,60),cost:xn(b.cost)}:null}}
+function xRep(r){if(!r||!Array.isArray(r.rows))return null;return{from:xn(r.from),to:xn(r.to),at:Date.now(),rows:r.rows.slice(0,1000).map(x=>({gid:gsid(x.gid),name:xc(x.name,120),q:xn(x.q),rev:xn(x.rev),cr:xn(x.cr),cc:xn(x.cc)})).filter(x=>x.name)}}
+function xText(items,extra){const c=S.cfg;if(!c.shopId)c.shopId=uid();
+ return JSON.stringify(Object.assign({format:'tiem',v:1,from:XME,exportedAt:Date.now(),shop:{shopId:c.shopId,name:c.name||'',phone:c.phone||'',addr:c.addr||'',foot:c.foot||c.footer||''},items},extra||{}),null,1)}
+async function xExport(to){const o=XG.out(to);if(!o.items.length)return toast('Chưa có hàng nào để gửi',1);save();
+ const name='tiem-'+XME+'-cho-'+to+'-'+dk(Date.now())+'.json',ok=await backupFile(name,xText(o.items,o.extra));if(ok){save();toast('Đã tạo gói gửi cho '+XN[to])}}
+function xOpen(text){let d;try{d=JSON.parse(text)}catch(e){return toast('File không đọc được',1)}
+ if(!d||d.format!=='tiem'||d.v!==1||!Array.isArray(d.items)||!XN[d.from])return toast('Không phải gói trao đổi của bộ công cụ (hãy xuất bằng nút “Gửi cho …”)',1);
+ if(d.from===XME)return toast('Đây là gói do chính app này xuất ra',1);
+ const sh=d.shop&&typeof d.shop==='object'?d.shop:{},P={from:d.from,at:xn(d.exportedAt),items:d.items.slice(0,5000).map(xClean).filter(Boolean),report:xRep(d.report),shop:{}};
+ ['shopId','name','phone','addr','foot'].forEach(k=>P.shop[k]=k==='shopId'?gsid(sh[k]):xc(sh[k],120));
+ const pl=XG.plan(P),other=!!(P.shop.shopId&&S.cfg.shopId&&P.shop.shopId!==S.cfg.shopId);
+ modal(`<h3>Nhập gói từ ${XN[P.from]}</h3><p class="mu" style="margin-bottom:8px">Xuất lúc ${P.at?xd(P.at)+' '+new Date(P.at).toTimeString().slice(0,5):'không rõ'} · ${P.items.length} hàng${P.report?' · có báo cáo bán':''}</p>`
+ +(other?'<p class="er" style="margin-bottom:8px">Gói này mang mã tiệm khác với tiệm trong app. Chỉ nhập nếu đây vẫn là cùng một tiệm.</p>':'')
+ +pl.warn.map(w=>`<p class="er" style="margin-bottom:6px">${w}</p>`).join('')
+ +(pl.lines.length?pl.lines.map(l=>`<div class="li"><span>${l}</span></div>`).join(''):'<p class="mu">Không có gì thay đổi.</p>')
+ +`<div class="row"><button class="ghost" onclick="closeM()">Hủy</button><button class="pri" id="xg_ok"${pl.n||P.report?'':' disabled'}>${other?'Vẫn nhập':'Nhập'}</button></div>`,1);
+ $('#xg_ok').onclick=()=>{const snap=JSON.stringify(S);let msg;
+  try{msg=pl.apply()}catch(e){S=JSON.parse(snap);toast('Nhập gói không thành công, dữ liệu giữ nguyên',1);closeM();return}
+  const c=S.cfg;if(P.shop.shopId&&(other||!c.shopId))c.shopId=P.shop.shopId;if(!c.shopId)c.shopId=uid();
+  const fk=c.footer!==undefined?'footer':'foot';['name','phone','addr'].forEach(k=>{if(!c[k]&&P.shop[k])c[k]=P.shop[k]});if(!c[fk]&&P.shop.foot)c[fk]=P.shop.foot;
+  save();applyCfg();XG.refresh();
+  modal(`<h3>Đã nhập gói</h3><p style="margin-bottom:10px">${msg}</p><div class="row"><button class="ghost" id="xg_un">↶ Hoàn tác</button><button class="pri" onclick="closeM()">Xong</button></div>`);
+  $('#xg_un').onclick=()=>{S=JSON.parse(snap);save();applyCfg();XG.refresh();closeM();toast('Đã hoàn tác nhập gói')}}}
+function xBtns(){return `<p class="hint" style="margin:0 0 8px">${XG.hint}</p><div class="g2">${XG.to.map(([t,l])=>`<button class="ghost" data-xg="out:${t}">⬇ ${l}</button>`).join('')}<button class="ghost" data-xg="in">⬆ Nhập gói từ app khác</button></div>`}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-xg]');if(!b)return;const k=b.dataset.xg;if(k==='in')pick('.json,.txt,text/plain,application/json',xOpen);else xExport(k.slice(4))});
 (async()=>{if(history.state&&history.state.ov)history.replaceState(null,'');await load();if((S.mig||0)<2){if(['#d9480f','#2446a6','#0f9d76'].includes(S.cfg.color))S.cfg.color='#2563eb';S.mig=2;save()}applyCfg();restoreCart();if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
  if(S.orders.length&&Date.now()-(S.lastBackup||0)>7*864e5)toast('Đã hơn 7 ngày chưa sao lưu — vào Cài đặt để sao lưu');
  go(S.cfg.name?'order':'set')})();
