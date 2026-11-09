@@ -1,4 +1,4 @@
-const V='dh-v11',A=['./','index.html','manifest.webmanifest','favicon.png','icon-192.png','icon-512.png'];
+const V='dh-v12',A=['./','index.html','manifest.webmanifest','favicon.png','icon-192.png','icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>Promise.all(A.map(u=>c.add(u).catch(()=>{})))).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V&&x!=='share').map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 /* bản đã lưu trước, tải bản mới ngầm: mở nhanh kể cả khi sóng yếu, lần mở sau có bản mới; dữ liệu người dùng nằm ở IndexedDB nên không bao giờ qua đây */
