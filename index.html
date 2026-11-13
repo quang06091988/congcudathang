@@ -243,7 +243,7 @@ $('#olist').addEventListener('click',e=>{if(e.target.closest('#more')){OL+=100;r
 $('#rg').onclick=e=>{const b=e.target.closest('[data-r]');if(b){R=b.dataset.r;OL=100;rRep()}};
 function viewO(id){const o=S.orders.find(x=>x.id===id);if(!o)return;
  modal(`<h3>${esc(o.no)} · ${tm(o.ts)}</h3><p class="mu" style="margin-bottom:6px">${STT[o.st]}${o.rcv?' lúc '+tm(o.rcv):''}${o.to?' · Gửi đến: '+esc(o.to):''}</p>${o.items.map(i=>`<div class="li"><span>${esc(i.n)}<br><span class="mu">${qf(i.q)} ${esc(i.u)}${i.p>0?' × '+fmt(i.p)+'đ':''}${i.rq!=null&&Math.abs(i.rq-i.q)>1e-9?' · <b style="color:'+(i.rq<i.q?'var(--rd)':'#1a8a4a')+'">nhận '+qf(i.rq)+'</b>':''}</span></span>${i.p>0?'<b>'+fmt(i.q*i.p)+'đ</b>':''}</div>`).join('')}${o.note?`<p class="mu" style="margin-top:8px">Ghi chú: ${esc(o.note)}</p>`:''}
- ${o.st==='o'?`<button class="pri" style="width:100%;margin-top:12px" onclick="recvM('${o.id}')">✓ Đã nhận hàng…</button>`:''}<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:${o.st==='o'?8:12}px"><button class="ghost" onclick="viewR('${o.id}')">Xem phiếu</button><button class="ghost" id="o_re">↺ Đặt lại đơn</button>${o.st==='o'?'<button class="ghost" id="o_ed">✎ Sửa đơn</button>':''}${o.st==='r'?'<button class="ghost" id="o_un">↶ Hoàn tác nhận</button>':''}${o.st==='r'&&hasShort(o)?'<button class="ghost" id="o_sh">⟲ Đặt lại phần thiếu</button>':''}<button class="dng" id="o_v">${o.st==='v'?'Khôi phục':'Huỷ đơn'}</button><button class="ghost" style="grid-column:1/-1" onclick="closeM()">Đóng</button></div>`);
+ ${o.st==='o'?`<button class="pri" style="width:100%;margin-top:12px" onclick="recvM('${o.id}')">✓ Đã nhận hàng…</button>`:''}<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:${o.st==='o'?8:12}px"><button class="ghost" onclick="viewR('${o.id}')">Xem phiếu đặt</button>${o.st==='r'?'<button class="ghost" onclick="viewR(\''+o.id+'\',\'rcv\')">Xem phiếu nhận</button>':''}<button class="ghost" id="o_re">↺ Đặt lại đơn</button>${o.st==='o'?'<button class="ghost" id="o_ed">✎ Sửa đơn</button>':''}${o.st==='r'?'<button class="ghost" id="o_un">↶ Hoàn tác nhận</button>':''}${o.st==='r'&&hasShort(o)?'<button class="ghost" id="o_sh">⟲ Đặt lại phần thiếu</button>':''}<button class="dng" id="o_v">${o.st==='v'?'Khôi phục':'Huỷ đơn'}</button><button class="ghost" style="grid-column:1/-1" onclick="closeM()">Đóng</button></div>`);
  $('#o_re').onclick=()=>reorder(o);if($('#o_ed'))$('#o_ed').onclick=()=>editOrder(o);if($('#o_un'))$('#o_un').onclick=()=>undoRcv(o);if($('#o_sh'))$('#o_sh').onclick=()=>reorderShort(o);$('#o_v').onclick=()=>{if(o.st!=='v'&&!confirm('Huỷ đơn '+o.no+'? Bạn có thể khôi phục sau.'))return;o.st=o.st==='v'?(o.rcv?'r':'o'):'v';save();closeM();rRep();rOrder()}}
 /* bấm nhầm "Đã nhận": đưa phiếu về "Đã đặt". Giá nhập đã ghi lúc nhận vẫn giữ nguyên */
 function undoRcv(o){if(!o||o.st!=='r')return;if(!confirm('Đưa phiếu '+o.no+' về "Đã đặt"?\nGiá nhập đã nhập lúc nhận vẫn được giữ.'+(o.items.some(i=>i.rq!=null)?'\nSố lượng thực nhận đã ghi sẽ bị xoá.':'')))return;o.st='o';o.rcv=0;o.items.forEach(i=>{delete i.rq});save();closeM();rRep();rOrder();toast('Đã đưa '+o.no+' về "Đã đặt"')}
@@ -264,10 +264,11 @@ function recvM(id){const o=S.orders.find(x=>x.id===id);if(!o)return;const J=+S.c
    const el=r.querySelector('[data-f=p]'),v=num(el.value);
    if(el.value.trim()&&v>0){const pr=S.products.find(x=>x.id===i.i),old=pr&&pr.p>0?pr.p:i.p;if(!(old>0)||Math.abs(v-old)>=0.5)chg++;i.p=v;if(pr)pr.p=v}});
   o.st='r';o.rcv=Date.now();save();rRep();rOrder();
-  const lech=o.items.filter(i=>i.rq!=null);
-  if(!chg&&!lech.length){closeM();toast('Đã ghi nhận hàng về');return}
-  modal(`<h3>Đã ghi nhận hàng về · ${esc(o.no)}</h3>${lech.length?`<p class="mu" style="margin-bottom:6px">Số lượng nhận khác đơn đặt:</p>${lech.map(i=>`<div class="li"><span>${esc(i.n)}</span><span style="font-weight:700;color:${i.rq<i.q?'var(--rd)':'#1a8a4a'}">đặt ${qf(i.q)} · nhận ${qf(i.rq)} ${esc(i.u)}</span></div>`).join('')}`:''}${chg?`<p class="mu" style="margin-top:8px">Giá nhập đã đổi ở ${chg} hàng.</p>`:''}<div style="display:grid;gap:8px;margin-top:12px">${chg?'<button class="ghost" id="rs_g">↗ Gửi gói giá nhập cho Tính giá</button>':''}${hasShort(o)?'<button class="ghost" id="rs_s">⟲ Đặt lại phần thiếu</button>':''}<button class="pri" onclick="closeM()">Xong</button></div>`);
-  if($('#rs_g'))$('#rs_g').onclick=()=>xExport('gia');if($('#rs_s'))$('#rs_s').onclick=()=>reorderShort(o)}}
+  rcvDone(o,chg)}}
+/* ngay sau khi nhận: phiếu nhận hàng kèm các tuỳ chọn còn áp dụng (gửi gói khi có giá đổi, đặt lại khi có hàng thiếu) */
+function rcvDone(o,chg){
+ modal(`<h3>Phiếu nhận hàng · ${esc(o.no)}</h3><div id="pvb" class="pvb" style="max-height:44dvh"><div class="sk"></div></div><div style="display:grid;gap:8px;margin-top:10px">${chg?'<button class="ghost" id="rs_g">↗ Gửi gói giá nhập cho Tính giá</button>':''}${hasShort(o)?'<button class="ghost" id="rs_s">⟲ Đặt lại phần thiếu</button>':''}<div class="row" style="margin-top:0"><button class="ghost" id="pv_p" disabled>🖨 In</button><button class="ghost" id="pv_s" disabled>↗ Chia sẻ</button></div><button class="pri" onclick="closeM()">Xong</button></div>`);
+ if($('#rs_g'))$('#rs_g').onclick=()=>xExport('gia');if($('#rs_s'))$('#rs_s').onclick=()=>reorderShort(o);pvLoad(o,'rcv')}
 /* đặt bù: nạp sẵn đúng phần còn thiếu của phiếu đã nhận vào đơn mới (không tạo trạng thái nhận một phần) */
 function reorderShort(o){if(!o||!hasShort(o))return;if(Object.keys(cart).length&&!confirm('Thay các món đang chọn bằng phần còn thiếu của phiếu '+o.no+'?'))return;
  snackHide();cart={};AD={};o.items.forEach(i=>{const m=Math.round((i.q-(i.rq!=null?i.rq:i.q))*1000)/1000;if(!(m>0))return;if(!i.x&&S.products.some(p=>p.id===i.i))cart[i.i]=m;else{AD[i.i]={id:i.i,n:i.n,u:i.u,qc:i.qc||'',p:i.p||0};cart[i.i]=m}});
@@ -281,15 +282,16 @@ function docSoTienBangChu(n){n=Math.round(n||0);if(!n)return'Không đồng';con
   if(ch>1){k+=' '+chu[ch]+' mươi';if(dn===1)k+=' mốt';else if(dn===5)k+=' lăm';else if(dn>0)k+=' '+chu[dn]}else if(ch===1){k+=' mười';if(dn===5)k+=' lăm';else if(dn>0)k+=' '+chu[dn]}else if(dn>0){if(tr>0||full)k+=' lẻ';k+=' '+chu[dn]}return k.trim()}
  const g=[];let x=n;while(x>0){g.push(x%1000);x=Math.floor(x/1000)}const hi=g.length-1,p=[];for(let i=hi;i>=0;i--){if(g[i]===0)continue;p.push((d3(g[i],i!==hi)+dv[i]).trim())}
  const s=p.join(' ').replace(/\s+/g,' ').trim();return s.charAt(0).toUpperCase()+s.slice(1)+' đồng'}
-function rcPages(o){const c=S.cfg,col=/^#[0-9a-f]{6}$/i.test(c.color)?c.color:'#2563eb',D=2,W=720,PH=1044,pL=40,cw=W-80,FF='system-ui,-apple-system,"Segoe UI",Roboto,sans-serif',F=(w,z)=>w+' '+z+'px '+FF,ink='#241C17',sub='#6E6156',ln='#C8BFAE',hd=tint(col,.86);
+function rcPages(o,mode){const RV=mode==='rcv',rq=i=>i.rq!=null?i.rq:i.q,c=S.cfg,col=/^#[0-9a-f]{6}$/i.test(c.color)?c.color:'#2563eb',D=2,W=720,PH=1044,pL=40,cw=W-80,FF='system-ui,-apple-system,"Segoe UI",Roboto,sans-serif',F=(w,z)=>w+' '+z+'px '+FF,ink='#241C17',sub='#6E6156',ln='#C8BFAE',hd=tint(col,.86);
  const sp=!!c.price&&o.items.some(i=>i.p>0),all=sp&&o.items.every(i=>i.p>0);
- const cols=sp?[46,258,58,52,132,154]:[46,318,86,80,110],heads=sp?['STT','TÊN HÀNG','ĐVT','SL','ĐƠN GIÁ','THÀNH TIỀN']:['STT','TÊN HÀNG','ĐVT','SL','GHI CHÚ'],ks=cw/cols.reduce((a,b)=>a+b,0);
+ const cols=RV?(sp?[40,196,52,58,60,120,150]:[44,232,66,72,76,110]):(sp?[46,258,58,52,132,154]:[46,318,86,80,110]),heads=RV?(sp?['STT','TÊN HÀNG','ĐVT','SL ĐẶT','SL NHẬN','ĐƠN GIÁ','THÀNH TIỀN']:['STT','TÊN HÀNG','ĐVT','SL ĐẶT','SL NHẬN','GHI CHÚ']):(sp?['STT','TÊN HÀNG','ĐVT','SL','ĐƠN GIÁ','THÀNH TIỀN']:['STT','TÊN HÀNG','ĐVT','SL','GHI CHÚ']),ks=cw/cols.reduce((a,b)=>a+b,0);
  for(let i=0;i<cols.length;i++)cols[i]*=ks;const xs=[pL];cols.forEach(w=>xs.push(xs[xs.length-1]+w));
  const m=document.createElement('canvas').getContext('2d');
  const fit=(t,mw,f)=>{m.font=f;if(m.measureText(t).width<=mw)return t;let s=t;while(s.length>1&&m.measureText(s+'…').width>mw)s=s.slice(0,-1);return s+'…'};
  const wrap=(t,mw,f,mx)=>{m.font=f;const w=String(t).split(' '),L=[];let cur='';for(let i=0;i<w.length;i++){const k=cur?cur+' '+w[i]:w[i];if(m.measureText(k).width<=mw||!cur)cur=k;else{L.push(cur);cur=w[i];if(L.length===mx-1){L.push(fit(w.slice(i).join(' '),mw,f));return L}}}if(cur)L.push(cur);return L};
  const nf=F(600,14),rows=o.items.map((i,k)=>{const nl=wrap(i.n,cols[1]-16,nf,2);return{i,k,nl,h:Math.max(42,14+nl.length*17+(i.qc?15:0))}});
- const total=Math.round(o.items.reduce((s,i)=>s+(i.p>0?i.q*i.p:0),0)),nlines=o.note?wrap('Ghi chú: '+o.note,cw,F(500,13),4):[];
+ const total=Math.round(o.items.reduce((s,i)=>s+(i.p>0?(RV?rq(i):i.q)*i.p:0),0)),nlines=o.note?wrap('Ghi chú: '+o.note,cw,F(500,13),4).map(t=>({t,cl:ink})):[];
+ if(RV){const ex=[],lst=(f,lb,cl)=>{const a=o.items.filter(f);if(a.length)wrap(lb+': '+a.map(i=>i.n+' ('+qf(Math.abs(i.q-rq(i)))+' '+(i.u||'')+')').join(', '),cw,F(700,13),3).forEach(t=>ex.push({t,cl,f:F(700,13)}))};lst(i=>rq(i)<i.q-1e-9,'Thiếu','#CE2B2B');lst(i=>rq(i)>i.q+1e-9,'Thừa','#1a8a4a');nlines.unshift(...ex)}
  const HEAD=196,HEADN=84,HR=42,TR=44,LIM=PH-56,fh=TR+30+(nlines.length?nlines.length*20+8:0)+(all?24:0)+16+18+84+30;
  const single=HEAD+HR+rows.reduce((a,r)=>a+r.h,0)+fh<=PH;let pg;
  if(single)pg=[rows];else{let y=HEAD+HR,cur=[];pg=[cur];rows.forEach(r=>{if(y+r.h>LIM&&cur.length){cur=[];pg.push(cur);y=HEADN+HR}cur.push(r);y+=r.h});
@@ -298,29 +300,32 @@ function rcPages(o){const c=S.cfg,col=/^#[0-9a-f]{6}$/i.test(c.color)?c.color:'#
   const cv=document.createElement('canvas');cv.width=W*D;cv.height=H*D;const x=cv.getContext('2d');x.scale(D,D);x.fillStyle='#fff';x.fillRect(0,0,W,H);
   const put=(t,px,py,f,cl,al)=>{x.font=f;x.fillStyle=cl;x.textAlign=al||'left';x.fillText(t,px,py)},CC=(t,py,f,cl)=>put(t,W/2,py,f,cl,'center');
   if(first){CC(fit(c.name||'Cửa hàng',cw,F(800,30)),56,F(800,30),shade(col,.3));const ct=[];if(c.addr)ct.push(c.addr);if(c.phone)ct.push('ĐT: '+c.phone);if(ct.length)CC(fit(ct.join(' · '),cw,F(400,13)),82,F(400,13),sub);
-   x.strokeStyle=col;x.lineWidth=2.5;x.beginPath();x.moveTo(pL,100);x.lineTo(W-pL,100);x.stroke();CC('PHIẾU ĐẶT HÀNG',134,F(800,21),ink);
-   if(o.to)put(fit('Gửi đến: '+o.to,330,F(600,15)),pL,168,F(600,15),ink);put(o.no+' · '+dm(o.ts)+' '+tm(o.ts).slice(6),W-pL,168,F(400,13),sub,'right');if(o.st==='v')CC('ĐÃ HUỶ',192,F(800,14),'#CE2B2B')}
-  else CC('PHIẾU ĐẶT HÀNG · '+o.no+' (tiếp)',52,F(800,16),ink);
+   x.strokeStyle=col;x.lineWidth=2.5;x.beginPath();x.moveTo(pL,100);x.lineTo(W-pL,100);x.stroke();CC(RV?'PHIẾU NHẬN HÀNG':'PHIẾU ĐẶT HÀNG',134,F(800,21),ink);
+   if(o.to)put(fit((RV?'Nhà cung cấp: ':'Gửi đến: ')+o.to,330,F(600,15)),pL,168,F(600,15),ink);{const t0=RV?(o.rcv||o.ts):o.ts;put(RV?'Đơn '+o.no+' · nhận '+dm(t0)+' '+tm(t0).slice(6):o.no+' · '+dm(o.ts)+' '+tm(o.ts).slice(6),W-pL,168,F(400,13),sub,'right')}if(o.st==='v')CC('ĐÃ HUỶ',192,F(800,14),'#CE2B2B')}
+  else CC((RV?'PHIẾU NHẬN HÀNG':'PHIẾU ĐẶT HÀNG')+' · '+o.no+' (tiếp)',52,F(800,16),ink);
   x.fillStyle=hd;x.fillRect(pL,top,cw,HR);heads.forEach((lb,i)=>put(lb,xs[i]+cols[i]/2,top+27,F(700,12.5),ink,'center'));
   let ry=top+HR;const bot=top+HR+R.reduce((a,r)=>a+r.h,0);if(last)x.fillStyle=hd,x.fillRect(pL,bot,cw,TR);
   R.forEach(r=>{const i=r.i,cy=ry+r.h/2+5,sy=ry+r.h/2-(r.nl.length-1)*8.5+5-(i.qc?7:0);
-   put(String(r.k+1),xs[0]+cols[0]/2,cy,F(500,13),sub,'center');r.nl.forEach((l,li)=>put(l,xs[1]+8,sy+li*17,nf,ink));if(i.qc)put(fit(i.qc,cols[1]-16,F(400,11.5)),xs[1]+8,sy+r.nl.length*17-1,F(400,11.5),sub);
-   put(i.u||'',xs[2]+cols[2]/2,cy,F(500,12.5),sub,'center');put(qf(i.q),xs[3]+cols[3]/2,cy,F(600,14),ink,'center');
-   if(sp&&i.p>0){put(fmt(i.p),xs[4]+cols[4]-8,cy,F(500,14),ink,'right');put(fmt(i.p*i.q),xs[5]+cols[5]-8,cy,F(700,14),ink,'right')}ry+=r.h});
+   if(RV){const d0=rq(i)-i.q;if(Math.abs(d0)>1e-9){x.fillStyle=d0<0?'#FDECEC':'#E8F6EE';x.fillRect(pL,ry,cw,r.h)}}put(String(r.k+1),xs[0]+cols[0]/2,cy,F(500,13),sub,'center');r.nl.forEach((l,li)=>put(l,xs[1]+8,sy+li*17,nf,ink));if(i.qc)put(fit(i.qc,cols[1]-16,F(400,11.5)),xs[1]+8,sy+r.nl.length*17-1,F(400,11.5),sub);
+   put(i.u||'',xs[2]+cols[2]/2,cy,F(500,12.5),sub,'center');
+   if(RV){const q2=rq(i),df=q2-i.q,sh=df<-1e-9,ov=df>1e-9,cc=sh?'#CE2B2B':ov?'#1a8a4a':ink;put(qf(i.q),xs[3]+cols[3]/2,cy,F(500,14),sub,'center');put(qf(q2),xs[4]+cols[4]/2,cy,F(800,14),cc,'center');
+    if(sp){if(i.p>0){put(fmt(i.p),xs[5]+cols[5]-8,cy,F(500,14),ink,'right');put(fmt(i.p*q2),xs[6]+cols[6]-8,cy,F(700,14),ink,'right')}}else if(sh||ov)put((sh?'Thiếu ':'Thừa ')+qf(Math.abs(df)),xs[5]+cols[5]/2,cy,F(700,12.5),cc,'center')}
+   else{put(qf(i.q),xs[3]+cols[3]/2,cy,F(600,14),ink,'center');if(sp&&i.p>0){put(fmt(i.p),xs[4]+cols[4]-8,cy,F(500,14),ink,'right');put(fmt(i.p*i.q),xs[5]+cols[5]-8,cy,F(700,14),ink,'right')}}ry+=r.h});
   x.strokeStyle=ln;x.lineWidth=1;x.strokeRect(pL,top,cw,(last?bot+TR:bot)-top);let gy=top+HR;x.beginPath();x.moveTo(pL,gy);x.lineTo(W-pL,gy);R.forEach(r=>{gy+=r.h;x.moveTo(pL,gy);x.lineTo(W-pL,gy)});for(let k=1;k<cols.length;k++){x.moveTo(xs[k],top);x.lineTo(xs[k],bot)}x.stroke();
   if(last){put(sp?(all?'TỔNG CỘNG':'TẠM TÍNH'):'TỔNG CỘNG',xs[0]+10,bot+28,F(800,15),ink);if(sp)put(fmt(total)+' đ',pL+cw-8,bot+28,F(900,16),'#CE2B2B','right');else put(o.items.length+' mặt hàng',pL+cw-8,bot+28,F(800,15),ink,'right');
-   let fy=bot+TR+30;nlines.forEach(l=>{put(l,pL,fy,F(500,13),ink);fy+=20});if(nlines.length)fy+=8;
+   let fy=bot+TR+30;nlines.forEach(l=>{put(l.t,pL,fy,l.f||F(500,13),l.cl);fy+=20});if(nlines.length)fy+=8;
    if(all){put(fit('Bằng chữ: '+docSoTienBangChu(total),cw,F(600,13)),pL,fy,F(600,13),ink);fy+=24}
-   fy+=16;const lx=pL+cw*.25,rx=W-pL-cw*.25;put('Người đặt hàng',lx,fy,F(700,13.5),ink,'center');put('Người nhận hàng',rx,fy,F(700,13.5),ink,'center');fy+=18;
+   fy+=16;const lx=pL+cw*.25,rx=W-pL-cw*.25;put(RV?'Người giao hàng':'Người đặt hàng',lx,fy,F(700,13.5),ink,'center');put('Người nhận hàng',rx,fy,F(700,13.5),ink,'center');fy+=18;
    put('(Ký, ghi rõ họ tên)',lx,fy,F(400,11),sub,'center');put('(Ký, ghi rõ họ tên)',rx,fy,F(400,11),sub,'center');fy+=84;CC(c.footer||'Xin cảm ơn!',fy,F(500,13),sub)}
   if(pg.length>1)put('Trang '+(pi+1)+'/'+pg.length,W/2,H-20,F(400,11),sub,'center');return cv})}
-function viewR(id){const o=S.orders.find(x=>x.id===id);if(!o)return;
- modal(`<h3>Phiếu ${esc(o.no)}</h3><div id="pvb" class="pvb"><div class="sk"></div></div><div class="row"><button class="ghost" onclick="closeM()">Đóng</button><button class="ghost" id="pv_p" disabled>🖨 In</button><button class="pri" id="pv_s" disabled>↗ Chia sẻ</button></div>`);
- setTimeout(async()=>{await fontsReady();if($('#mo').hidden)return;const cv=rcPages(o),us=cv.map(c=>c.toDataURL('image/png'));PV={o,cv};
+function viewR(id,mode){const o=S.orders.find(x=>x.id===id);if(!o)return;
+ modal(`<h3>Phiếu ${mode==='rcv'?'nhận hàng ':''}${esc(o.no)}</h3><div id="pvb" class="pvb"><div class="sk"></div></div><div class="row"><button class="ghost" onclick="closeM()">Đóng</button><button class="ghost" id="pv_p" disabled>🖨 In</button><button class="pri" id="pv_s" disabled>↗ Chia sẻ</button></div>`);pvLoad(o,mode)}
+/* vẽ phiếu (đặt hoặc nhận) vào #pvb và nối nút In / Chia sẻ */
+function pvLoad(o,mode){setTimeout(async()=>{await fontsReady();if($('#mo').hidden)return;const cv=rcPages(o,mode),us=cv.map(c=>c.toDataURL('image/png'));PV={o,cv,mode};
   $('#pvb').innerHTML=us.map((u,i)=>`<img src="${u}" alt="Phiếu ${esc(o.no)} trang ${i+1}">`).join('');$('#pv_p').disabled=$('#pv_s').disabled=false;
   $('#pv_p').onclick=()=>{$('#rc').innerHTML=us.map(u=>`<img src="${u}">`).join('');setTimeout(()=>window.print(),150)};$('#pv_s').onclick=shareR},30)}
-async function shareR(){const{o,cv}=PV,bs=await Promise.all(cv.map(c=>new Promise(r=>c.toBlob(r,'image/png')))),fs=bs.map((b,i)=>new File([b],'phieu-dat-'+o.no+(bs.length>1?'-'+(i+1):'')+'.png',{type:'image/png'}));
- if(navigator.canShare&&navigator.canShare({files:fs})){try{await navigator.share({files:fs,title:'Phiếu đặt hàng '+o.no});return}catch(e){if(e.name==='AbortError')return}}
+async function shareR(){const{o,cv,mode}=PV,bs=await Promise.all(cv.map(c=>new Promise(r=>c.toBlob(r,'image/png')))),fs=bs.map((b,i)=>new File([b],(mode==='rcv'?'phieu-nhan-':'phieu-dat-')+o.no+(bs.length>1?'-'+(i+1):'')+'.png',{type:'image/png'}));
+ if(navigator.canShare&&navigator.canShare({files:fs})){try{await navigator.share({files:fs,title:(mode==='rcv'?'Phiếu nhận hàng ':'Phiếu đặt hàng ')+o.no});return}catch(e){if(e.name==='AbortError')return}}
  fs.forEach((f,i)=>setTimeout(()=>{const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)},i*400));toast('Đã tải ảnh phiếu về máy')}
 /* ---- cài đặt ---- */
 const FA=[['name','Tên cửa hàng','text','VD: Cà phê Nắng','Hiện ở đầu màn hình và trên phiếu.',1],['phone','Số điện thoại','tel','VD: 0901 234 567','In trên phiếu.'],['addr','Địa chỉ','text','VD: 12 Nguyễn Trãi, Phan Rang','In trên phiếu.'],['pre','Tiền tố số phiếu','text','VD: DH-','Để trống nếu không cần.'],['footer','Lời cuối phiếu','text','VD: Xin cảm ơn!','In ở cuối phiếu.'],['color','Màu chủ đạo','color','','<button type="button" class="sw" data-c="#2563eb" aria-label="Xanh dương" style="background:#2563eb"></button><button type="button" class="sw" data-c="#0f9d76" aria-label="Xanh lá" style="background:#0f9d76"></button><button type="button" class="sw" data-c="#7048e8" aria-label="Tím" style="background:#7048e8"></button><button type="button" class="sw" data-c="#0b7285" aria-label="Xanh ngọc" style="background:#0b7285"></button><button type="button" class="sw" data-c="#d9480f" aria-label="Cam" style="background:#d9480f"></button><button type="button" class="sw" data-c="#d6336c" aria-label="Hồng" style="background:#d6336c"></button>']];
